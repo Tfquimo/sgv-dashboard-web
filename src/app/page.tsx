@@ -712,10 +712,6 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
                   const abertura = c.data_abertura ? new Date(c.data_abertura).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
                   const fechamento = c.data_fechamento ? new Date(c.data_fechamento).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : null;
 
-                  // Calcula o número do caixa do utilizador (Ex: 1º caixa do Admin = Caixa 01)
-                  const userCaixas = caixasCloud.filter(x => x.usuario_nome === c.usuario_nome).sort((a,b) => new Date(a.data_abertura).getTime() - new Date(b.data_abertura).getTime());
-                  const userCaixaNumber = userCaixas.findIndex(x => x.caixa_id_local === c.caixa_id_local) + 1;
-
                   // Calcula dinamicamente o total apurado de vendas se o caixa estiver aberto
                   const vendasDesteTurno = listaVendas.filter(v => v.caixa_id_local === c.caixa_id_local && v.status !== 'CANCELADA');
                   const totalVendido = vendasDesteTurno.reduce((acc, curr) => acc + curr.total, 0);
@@ -726,9 +722,9 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="font-bold text-[#2d2d2d] dark:text-zinc-100 text-lg">
-                            Caixa {String(userCaixaNumber).padStart(2, '0')}
+                            {c.usuario_nome || 'Operador desconhecido'}
                           </h3>
-                          <p className="text-sm text-slate-500 dark:text-zinc-400">{c.usuario_nome || 'Operador desconhecido'}</p>
+                          <p className="text-sm text-slate-500 dark:text-zinc-400">Turno #{String(c.caixa_id_local).padStart(2, '0')}</p>
                         </div>
                         <span className={`px-2.5 py-1 text-xs font-bold rounded-full flex items-center gap-1.5 ${aberto ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-slate-100 dark:bg-zinc-700 text-slate-500 dark:text-zinc-400'}`}>
                           <div className={`w-1.5 h-1.5 rounded-full ${aberto ? 'bg-green-500 animate-pulse' : 'bg-slate-400'}`}></div>

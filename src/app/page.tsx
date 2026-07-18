@@ -240,9 +240,9 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
   const caixasAbertas = caixasCloud.filter(c => c.status_fluxo === 'ABERTO');
 
   const kpi = {
-    faturamento: `MT ${totalFaturamento.toLocaleString('pt', { minimumFractionDigits: 2 })}`,
+    faturamento: `${totalFaturamento.toLocaleString('pt', { minimumFractionDigits: 2 })} MT`,
     vendas: totalVendas,
-    ticket: `MT ${ticketMedio.toLocaleString('pt', { minimumFractionDigits: 2 })}`,
+    ticket: `${ticketMedio.toLocaleString('pt', { minimumFractionDigits: 2 })} MT`,
     alertas: produtosBaixoEstoque.length,
   };
 
@@ -712,6 +712,10 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
                   const abertura = c.data_abertura ? new Date(c.data_abertura).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—';
                   const fechamento = c.data_fechamento ? new Date(c.data_fechamento).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : null;
 
+                  // Calcula o número do caixa do utilizador (Ex: 1º caixa do Admin = Caixa 01)
+                  const userCaixas = caixasCloud.filter(x => x.usuario_nome === c.usuario_nome).sort((a,b) => new Date(a.data_abertura).getTime() - new Date(b.data_abertura).getTime());
+                  const userCaixaNumber = userCaixas.findIndex(x => x.caixa_id_local === c.caixa_id_local) + 1;
+
                   // Calcula dinamicamente o total apurado de vendas se o caixa estiver aberto
                   const vendasDesteTurno = listaVendas.filter(v => v.caixa_id_local === c.caixa_id_local && v.status !== 'CANCELADA');
                   const totalVendido = vendasDesteTurno.reduce((acc, curr) => acc + curr.total, 0);
@@ -722,7 +726,7 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
                       <div className="flex justify-between items-start mb-4">
                         <div>
                           <h3 className="font-bold text-[#2d2d2d] dark:text-zinc-100 text-lg">
-                            Caixa {String(c.caixa_id_local).padStart(2, '0')}
+                            Caixa {String(userCaixaNumber).padStart(2, '0')}
                           </h3>
                           <p className="text-sm text-slate-500 dark:text-zinc-400">{c.usuario_nome || 'Operador desconhecido'}</p>
                         </div>
@@ -741,7 +745,7 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
                           <p className="text-xs text-slate-500 dark:text-zinc-400 mb-1">{aberto ? 'Saldo Inicial' : 'Fechamento'}</p>
                           <p className="font-bold text-[#2d2d2d] dark:text-white text-sm">
                             {aberto
-                              ? `MT ${Number(c.valor_inicial).toLocaleString('pt', { minimumFractionDigits: 2 })}`
+                              ? `${Number(c.valor_inicial).toLocaleString('pt', { minimumFractionDigits: 2 })} MT`
                               : (fechamento || '—')}
                           </p>
                         </div>
@@ -750,7 +754,7 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
                       <div className="mt-3 bg-[#68c18a]/10 dark:bg-[#68c18a]/20 rounded-xl p-3 flex justify-between items-center">
                         <p className="text-xs text-slate-500 dark:text-zinc-400 font-medium">Total Apurado</p>
                         <p className="font-bold text-[#68c18a]">
-                          MT {valorApurado.toLocaleString('pt', { minimumFractionDigits: 2 })}
+                          {valorApurado.toLocaleString('pt', { minimumFractionDigits: 2 })} MT
                         </p>
                       </div>
                     </div>

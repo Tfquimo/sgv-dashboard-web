@@ -602,8 +602,45 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
                   </div>
                 )}
 
-                {/* Tabela de produtos */}
-                <div className={`${cardClass} overflow-hidden`}>
+                {/* Mobile Cards View */}
+                <div className="md:hidden space-y-3">
+                  {produtosCloud.map(p => {
+                    const atual = Number(p.estoque_atual);
+                    const minimo = Number(p.estoque_minimo);
+                    const critico = atual === 0;
+                    const baixo = !critico && atual <= minimo;
+                    return (
+                      <div key={p.id} className={`${cardClass} p-4`}>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-bold text-[#2d2d2d] dark:text-zinc-100">{p.nome}</p>
+                            <p className="text-xs text-slate-500 dark:text-zinc-400">{p.categoria || 'Sem categoria'}</p>
+                          </div>
+                          <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${critico ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : baixo ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'}`}>
+                            {critico ? 'SEM STOCK' : baixo ? 'CRÍTICO' : 'OK'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800/50">
+                          <div>
+                            <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-zinc-500 font-semibold mb-0.5">Estoque</p>
+                            <p className={`font-bold ${critico ? 'text-red-500' : baixo ? 'text-orange-500' : 'text-[#2d2d2d] dark:text-zinc-200'}`}>
+                              {atual.toLocaleString('pt', { minimumFractionDigits: 0 })} <span className="text-xs text-slate-400 font-normal">/ min {minimo.toLocaleString('pt')}</span>
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-[10px] uppercase tracking-wider text-slate-400 dark:text-zinc-500 font-semibold mb-0.5">Preço Venda</p>
+                            <p className="font-bold text-[#68c18a] text-lg">
+                              MT {Number(p.preco_venda).toLocaleString('pt', { minimumFractionDigits: 2 })}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className={`hidden md:block ${cardClass} overflow-hidden`}>
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead>
@@ -741,8 +778,33 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
 // ============================================================
 export default function App() {
   const [user, setUser] = useState<any>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
   const { isDark, toggleDark } = useDarkMode();
 
-  if (!user) return <LoginPage onLogin={u => setUser(u)} isDark={isDark} toggleDark={toggleDark} />;
-  return <DashboardApp onLogout={() => setUser(null)} user={user} isDark={isDark} toggleDark={toggleDark} />;
+  useEffect(() => {
+    const savedUser = localStorage.getItem('sgv_user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        localStorage.removeItem('sgv_user');
+      }
+    }
+    setLoadingUser(false);
+  }, []);
+
+  const handleLogin = (u: any) => {
+    setUser(u);
+    localStorage.setItem('sgv_user', JSON.stringify(u));
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('sgv_user');
+  };
+
+  if (loadingUser) return null;
+
+  if (!user) return <LoginPage onLogin={handleLogin} isDark={isDark} toggleDark={toggleDark} />;
+  return <DashboardApp onLogout={handleLogout} user={user} isDark={isDark} toggleDark={toggleDark} />;
 }

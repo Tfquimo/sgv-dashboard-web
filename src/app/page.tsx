@@ -487,7 +487,40 @@ function DashboardApp({ onLogout, user, isDark, toggleDark }: { onLogout: () => 
               </div>
             )}
 
-            <div className={`${cardClass} overflow-hidden`}>
+            {/* Mobile Cards View */}
+            <div className="md:hidden space-y-3">
+              {listaVendas.length === 0 ? (
+                <div className={`${cardClass} p-8 text-center text-slate-500 dark:text-zinc-400`}>Sem vendas registadas na nuvem.</div>
+              ) : listaVendas.map(v => (
+                <div key={v.id} onClick={() => setVendaDetalhes(vendaDetalhes?.id === v.id ? null : v)}
+                  className={`${cardClass} p-4 cursor-pointer transition-colors ${vendaDetalhes?.id === v.id ? 'border-[#68c18a] bg-[#68c18a]/5' : ''}`}>
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
+                      <p className="font-bold text-[#2d2d2d] dark:text-zinc-100">{v.caixa}</p>
+                      <p className="text-xs text-slate-500 dark:text-zinc-400">ID: {v.id} • {v.hora}</p>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${v.status === 'CANCELADA' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'}`}>
+                      {v.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-end mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800/50">
+                    <p className="text-sm text-slate-500 dark:text-zinc-400">{v.forma}</p>
+                    <p className="font-bold text-[#68c18a] text-lg">MT {v.total.toLocaleString('pt', { minimumFractionDigits: 2 })}</p>
+                  </div>
+                </div>
+              ))}
+              {listaVendas.length > 0 && (
+                <div className={`${cardClass} p-4 bg-slate-50 dark:bg-zinc-800/80 flex justify-between items-center`}>
+                  <span className="font-bold text-[#2d2d2d] dark:text-white">Total Geral</span>
+                  <span className="font-bold text-[#2d2d2d] dark:text-white">
+                    MT {listaVendas.filter(v => v.status !== 'CANCELADA').reduce((a, v) => a + v.total, 0).toLocaleString('pt', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className={`hidden md:block ${cardClass} overflow-hidden`}>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
